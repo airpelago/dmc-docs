@@ -1,0 +1,10 @@
+version: "3.5"
+services:
+
+  drone:
+    image: tobiasfriden/dmc-rpi:latest
+    command: "--fcu_url udp://:14650@ --gcs_url tcp-l://127.0.0.1:5760"
+    network_mode: "host"
+    env_file:
+      - config.env
+    restart: unless-stopped
