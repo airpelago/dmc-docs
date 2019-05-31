@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
+echo Enter dronemissioncontrol.com login details:
 read -p 'Email: ' uservar
 read -sp 'Password: ' passvar
 echo
-echo Thank you $uservar we now have your login details
+echo Fetching drones for $uservar
 echo
 postDataJson="{\"email\":\"$uservar\",\"password\":\"$passvar\"}"
 token=$( curl -s https://dev-api.dronemissioncontrol.com/drone/gettoken \
@@ -54,10 +55,7 @@ do
         id=${array[$n]/'id:'} 
         idLst+=( $id )
 
-    fi
-
-    
-    
+    fi    
 done
 declare names
 declare idLst
@@ -69,12 +67,13 @@ do
 done
 
 echo
-read -p 'Enter drone password: ' dronepassvar
-echo -e "ID=${idLst[$REPLY]}\nPASSWORD=$dronepassvar"> config.env
+read -p 'Enter drone verification key: ' dronepassvar
+echo "ID=${idLst[$REPLY]}" > config.env
+echo "PASSWORD=$dronepassvar" >> config.env
 curl  -s https://raw.githubusercontent.com/airpelago/dmc-docs/master/docker-compose.yml > docker-compose.yml
 docker-compose pull
 
-read -p "do you wish to start [Y/N]? " -n 1 -r
+read -p "do you wish to start [Y/n]? " -n 1 -r
 echo   
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
