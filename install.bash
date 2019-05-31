@@ -1,4 +1,14 @@
-#!/bin/sh
+#!/bin/bash
+
+echo "Checking docker and docker-compose installation"
+echo "This might take a while if not installed"
+
+if [ ! -x "$(command -v docker)" ]; then
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+fi
+if [[ ! -f "/usr/local/bin/docker-compose" ]];
+sudo -u pi bash -c 'pip install docker-compose'
 
 echo Enter dronemissioncontrol.com login details:
 read -p 'Email: ' uservar
@@ -15,16 +25,6 @@ token=${token//\"}
 if [ ! ${#token} -ge 10 ]; then 
 echo
 echo "could not fetch token" ; exit
-fi
-
-if [ ! -x "$(command -v docker)" ]; then
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
-fi
-if [[ ! -f "/usr/local/bin/docker-compose" ]];
-then
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
 fi
 
 drones=$(curl -s -H "Authorization: $token" https://dev-api.dronemissioncontrol.com/user/drones/)
