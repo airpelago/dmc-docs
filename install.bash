@@ -1,14 +1,24 @@
 #!/bin/bash
 
-echo "Checking docker and docker-compose installation"
-echo "This might take a while if not installed"
-
+echo Checking docker installation...
 if [ ! -x "$(command -v docker)" ]; then
+    echo Docker not installed, installing...
     curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
+    sh get-docker.sh > /dev/null
+    usermod -aG docker pi
+    echo Please log out and in to apply changes!
+    exit 0
 fi
-if [[ ! -f "/usr/local/bin/docker-compose" ]];
-sudo -u pi bash -c 'pip install docker-compose'
+echo Done
+
+echo Checking docker-compose installation...
+if [[ ! -f "/home/pi/.local/bin/docker-compose" ]]; then
+    echo Docker-compose not installed, installing...
+    sudo -u pi bash -c 'pip install docker-compose' > /dev/null
+    echo "export PATH=/home/pi/.local/bin:$PATH" >> /home/pi/.bashrc
+fi
+echo Done
+echo
 
 echo Enter dronemissioncontrol.com login details:
 read -p 'Email: ' uservar
@@ -17,17 +27,17 @@ echo
 echo Fetching drones for $uservar
 echo
 postDataJson="{\"email\":\"$uservar\",\"password\":\"$passvar\"}"
-token=$( curl -s https://dev-api.dronemissioncontrol.com/drone/gettoken \
+token=$( curl -s https://api.dronemissioncontrol.com/drone/gettoken \
 -H 'Content-Type: application/json' \
 -d ${postDataJson} ) 
 
 token=${token//\"}
 if [ ! ${#token} -ge 10 ]; then 
 echo
-echo "could not fetch token" ; exit
+echo "Authorization failed" ; exit
 fi
 
-drones=$(curl -s -H "Authorization: $token" https://dev-api.dronemissioncontrol.com/user/drones/)
+drones=$(curl -s -H "Authorization: $token" https://api.dronemissioncontrol.com/user/drones/)
 drones=${drones/'"drones":'}
 drones=${drones//\{}
 drones=${drones//\[}
@@ -66,16 +76,16 @@ do
     break;
 done
 
-echo
+index=$((REPLY-1))
 read -p 'Enter drone verification key: ' dronepassvar
-echo "ID=${idLst[$REPLY]}" > config.env
+echo "ID=${idLst[$index]}" > config.env
 echo "PASSWORD=$dronepassvar" >> config.env
 curl  -s https://raw.githubusercontent.com/airpelago/dmc-docs/master/docker-compose.yml > docker-compose.yml
-docker-compose pull
+sudo -u pi bash -c '/home/pi/.local/bin/docker-compose pull'
 
-read -p "do you wish to start [Y/n]? " -n 1 -r
+read -p "Start drone? [Y/n]" -n 1 -r
 echo   
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-   docker-compose up -d
+   sudo -u pi bash -c '/home/pi/.local/bin/docker-compose up -d --force-recreate'
 fi
