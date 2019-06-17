@@ -80,6 +80,10 @@ index=$((REPLY-1))
 read -p 'Enter drone verification key: ' dronepassvar
 echo "ID=${idLst[$index]}" > config.env
 echo "PASSWORD=$dronepassvar" >> config.env
+read -p 'Enter connection uri [udp://:14650@]: ' connuri
+connuri=${connuri:-"udp://:14650@"}
+echo "FCU_URL=$connuri" >> config.env
+
 curl  -s https://raw.githubusercontent.com/airpelago/dmc-docs/master/docker-compose.yml > docker-compose.yml
 sudo -u pi bash -c '/home/pi/.local/bin/docker-compose pull'
 

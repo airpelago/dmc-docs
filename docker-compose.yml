@@ -8,3 +8,4 @@ services:
     env_file:
       - config.env
     restart: unless-stopped
+    privileged: true
